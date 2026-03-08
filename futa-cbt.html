@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FUTA CBT Practice</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #00c853;
+    --green-dark: #007a33;
+    --green-glow: rgba(0,200,83,0.18);
+    --bg: #0a0f0d;
+    --surface: #111a14;
+    --surface2: #172010;
+    --border: #1e3024;
+    --text: #e8f5e9;
+    --muted: #5a7a62;
+    --red: #ff4444;
+    --gold: #ffd600;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,200,83,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,200,83,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none; z-index: 0;
+  }
+
+  .app { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+
+  /* Header */
+  .header {
+    display: flex; align-items: center; gap: 16px;
+    padding: 20px 0 32px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+  .logo {
+    width: 48px; height: 48px;
+    background: var(--green);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 18px;
+    color: #000; flex-shrink: 0;
+  }
+  .header-text h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 22px;
+    color: var(--green); letter-spacing: -0.5px;
+  }
+  .header-text p { color: var(--muted); font-size: 11px; margin-top: 2px; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; margin-bottom: 28px; background: var(--surface); padding: 4px; border-radius: var(--radius); border: 1px solid var(--border); }
+  .tab {
+    flex: 1; padding: 10px 8px;
+    border: none; background: transparent;
+    color: var(--muted); font-family: 'Space Mono', monospace;
+    font-size: 11px; cursor: pointer; border-radius: 8px;
+    transition: all .2s; font-weight: 700; letter-spacing: 0.5px;
+  }
+  .tab.active { background: var(--green); color: #000; }
+
+  /* Panels */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 15px;
+    color: var(--green); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* Form */
+  label { font-size: 11px; color: var(--muted); display: block; margin-bottom: 6px; letter-spacing: 0.5px; }
+  input, select, textarea {
+    width: 100%; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-family: 'Space Mono', monospace;
+    font-size: 13px; padding: 10px 14px;
+    outline: none; transition: border .2s;
+    resize: vertical;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--green); }
+  select option { background: var(--bg); }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .form-group { margin-bottom: 14px; }
+
+  /* Buttons */
+  .btn {
+    padding: 11px 22px; border: none; border-radius: 8px;
+    font-family: 'Syne', sans-serif; font-weight: 700;
+    font-size: 13px; cursor: pointer; transition: all .2s;
+    letter-spacing: 0.3px;
+  }
+  .btn-primary { background: var(--green); color: #000; }
+  .btn-primary:hover { background: #00e65c; transform: translateY(-1px); }
+  .btn-danger { background: var(--red); color: #fff; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--green); color: var(--green); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+  /* Question list */
+  .q-list { display: flex; flex-direction: column; gap: 10px; }
+  .q-item {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px;
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+  }
+  .q-item-text { font-size: 12px; line-height: 1.5; flex: 1; }
+  .q-meta { font-size: 10px; color: var(--muted); margin-top: 4px; }
+  .badge {
+    padding: 3px 8px; border-radius: 4px; font-size: 10px;
+    font-weight: 700; white-space: nowrap; flex-shrink: 0;
+  }
+  .badge-math { background: rgba(0,200,83,0.15); color: var(--green); }
+  .badge-eng { background: rgba(255,214,0,0.15); color: var(--gold); }
+  .badge-sci { background: rgba(100,181,246,0.15); color: #64b5f6; }
+
+  /* Empty state */
+  .empty {
+    text-align: center; padding: 48px 24px;
+    color: var(--muted); font-size: 12px;
+  }
+  .empty-icon { font-size: 36px; margin-bottom: 12px; }
+
+  /* === EXAM PANEL === */
+  .exam-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+  }
+  .exam-info { font-size: 11px; color: var(--muted); }
+  .exam-info strong { color: var(--text); }
+
+  .timer-box {
+    background: var(--surface2); border: 1px solid var(--green);
+    border-radius: 8px; padding: 8px 16px;
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: 20px; color: var(--green);
+    box-shadow: 0 0 16px var(--green-glow);
+    min-width: 90px; text-align: center;
+  }
+  .timer-box.urgent { color: var(--red); border-color: var(--red); box-shadow: 0 0 16px rgba(255,68,68,0.2); }
+
+  /* Progress bar */
+  .progress-wrap { margin-bottom: 20px; }
+  .progress-label { font-size: 10px; color: var(--muted); margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width .4s; }
+
+  /* Question card */
+  .q-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px;
+    margin-bottom: 20px; position: relative;
+    animation: slideIn .25s ease;
+  }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .q-number {
+    font-size: 10px; color: var(--green); font-weight: 700;
+    letter-spacing: 1px; margin-bottom: 12px;
+  }
+  .q-text { font-size: 14px; line-height: 1.7; margin-bottom: 24px; color: var(--text); }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    display: flex; align-items: center; gap: 12px;
+    padding: 13px 16px; border-radius: 8px;
+    border: 1px solid var(--border); cursor: pointer;
+    background: var(--bg); transition: all .18s;
+    font-size: 13px; user-select: none;
+  }
+  .option:hover:not(.disabled) { border-color: var(--green); background: var(--green-glow); }
+  .option.selected { border-color: var(--green); background: rgba(0,200,83,0.12); }
+  .option.correct { border-color: var(--green); background: rgba(0,200,83,0.2); }
+  .option.wrong { border-color: var(--red); background: rgba(255,68,68,0.12); }
+  .option.disabled { cursor: default; }
+  .opt-letter {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--border); display: flex; align-items: center;
+    justify-content: center; font-size: 11px; font-weight: 700;
+    flex-shrink: 0; transition: background .18s;
+  }
+  .option.selected .opt-letter { background: var(--green); color: #000; }
+  .option.correct .opt-letter { background: var(--green); color: #000; }
+  .option.wrong .opt-letter { background: var(--red); color: #fff; }
+
+  .explanation {
+    margin-top: 16px; padding: 14px;
+    background: var(--surface2); border-left: 3px solid var(--green);
+    border-radius: 0 8px 8px 0; font-size: 12px; color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* Nav */
+  .nav-row {
+    display: flex; justify-content: space-between;
+    align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+
+  /* Question grid */
+  .q-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+  .q-dot {
+    width: 32px; height: 32px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--bg);
+    font-size: 10px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all .15s;
+  }
+  .q-dot.answered { background: var(--green); color: #000; border-color: var(--green); }
+  .q-dot.current { border-color: var(--gold); color: var(--gold); }
+
+  /* === RESULTS PANEL === */
+  .score-hero {
+    text-align: center; padding: 40px 20px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); margin-bottom: 24px;
+  }
+  .score-circle {
+    width: 120px; height: 120px; border-radius: 50%;
+    border: 4px solid var(--green);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+    box-shadow: 0 0 32px var(--green-glow);
+  }
+  .score-pct { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; color: var(--green); }
+  .score-label { font-size: 9px; color: var(--muted); }
+  .score-grade { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+  .score-msg { font-size: 12px; color: var(--muted); }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px; text-align: center;
+  }
+  .stat-val { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; }
+  .stat-lbl { font-size: 10px; color: var(--muted); margin-top: 4px; }
+  .stat-correct .stat-val { color: var(--green); }
+  .stat-wrong .stat-val { color: var(--red); }
+  .stat-skip .stat-val { color: var(--muted); }
+
+  /* Review list */
+  .review-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px; margin-bottom: 12px;
+  }
+  .review-status { font-size: 10px; font-weight: 700; letter-spacing: 1px; margin-bottom: 8px; }
+  .status-correct { color: var(--green); }
+  .status-wrong { color: var(--red); }
+  .status-skip { color: var(--muted); }
+  .review-q { font-size: 13px; margin-bottom: 12px; line-height: 1.5; }
+  .review-options { display: flex; flex-direction: column; gap: 6px; }
+  .review-opt { font-size: 11px; padding: 6px 10px; border-radius: 6px; }
+  .review-opt.correct-ans { background: rgba(0,200,83,0.15); color: var(--green); }
+  .review-opt.user-wrong { background: rgba(255,68,68,0.15); color: var(--red); }
+  .review-opt.neutral { color: var(--muted); }
+
+  /* Setup form */
+  .setup-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px; margin-bottom: 20px;
+  }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  /* Notification */
+  .notif {
+    position: fixed; top: 20px; right: 20px; z-index: 999;
+    background: var(--surface); border: 1px solid var(--green);
+    border-radius: 8px; padding: 12px 18px;
+    font-size: 12px; color: var(--green);
+    box-shadow: 0 0 20px var(--green-glow);
+    transform: translateX(120%); transition: transform .3s;
+  }
+  .notif.show { transform: translateX(0); }
+  .notif.error { border-color: var(--red); color: var(--red); }
+
+  @media (max-width: 600px) {
+    .form-row { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .exam-header { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">FU</div>
+    <div class="header-text">
+      <h1>FUTA CBT Practice</h1>
+      <p>FEDERAL UNIVERSITY OF TECHNOLOGY, AKURE — DEPARTMENTAL EXAM PREP</p>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('questions')">📚 QUESTIONS</button>
+    <button class="tab" onclick="switchTab('exam')">📝 EXAM</button>
+    <button class="tab" onclick="switchTab('results')">📊 RESULTS</button>
+  </div>
+
+  <!-- QUESTIONS PANEL -->
+  <div class="panel active" id="panel-questions">
+    <div class="card">
+      <div class="card-title">➕ Add Question</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>SUBJECT</label>
+          <select id="q-subject">
+            <option value="Mathematics">Mathematics</option>
+            <option value="English">English / Use of English</option>
+            <option value="Physics">Physics</option>
+            <option value="Chemistry">Chemistry</option>
+            <option value="Biology">Biology</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>YEAR (optional)</label>
+          <input type="text" id="q-year" placeholder="e.g. 2022">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>QUESTION</label>
+        <textarea id="q-text" rows="3" placeholder="Type or paste the question here..."></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>OPTION A</label>
+          <input type="text" id="opt-a" placeholder="Option A">
+        </div>
+        <div class="form-group">
+          <label>OPTION B</label>
+          <input type="text" id="opt-b" placeholder="Option B">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>OPTION C</label>
+          <input type="text" id="opt-c" placeholder="Option C">
+        </div>
+        <div class="form-group">
+          <label>OPTION D</label>
+          <input type="text" id="opt-d" placeholder="Option D">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>CORRECT ANSWER</label>
+          <select id="q-answer">
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>EXPLANATION (optional)</label>
+          <input type="text" id="q-explanation" placeholder="Brief explanation...">
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
+        <button class="btn btn-primary" onclick="addQuestion()">ADD QUESTION</button>
+        <button class="btn btn-ghost" onclick="clearForm()">CLEAR</button>
+        <button class="btn btn-ghost" onclick="importJSON()">IMPORT JSON</button>
+        <button class="btn btn-ghost" onclick="exportJSON()">EXPORT JSON</button>
+      </div>
+    </div>
+
+    <!-- Question Bank -->
+    <div class="card">
+      <div class="card-title" style="justify-content:space-between;">
+        <span>📋 Question Bank (<span id="q-count">0</span>)</span>
+        <button class="btn btn-ghost" style="padding:6px 12px;font-size:10px;" onclick="clearAll()">CLEAR ALL</button>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label>FILTER BY SUBJECT</label>
+        <select id="filter-subject" onchange="renderBank()">
+          <option value="all">All Subjects</option>
+          <option value="Mathematics">Mathematics</option>
+          <option value="English">English / Use of English</option>
+          <option value="Physics">Physics</option>
+          <option value="Chemistry">Chemistry</option>
+          <option value="Biology">Biology</option>
+        </select>
+      </div>
+
+      <div class="q-list" id="q-bank"></div>
+    </div>
+  </div>
+
+  <!-- EXAM PANEL -->
+  <div class="panel" id="panel-exam">
+    <!-- Setup -->
+    <div id="exam-setup">
+      <div class="setup-card">
+        <div class="card-title">⚙️ Exam Setup</div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>SUBJECT FILTER</label>
+            <select id="exam-subject">
+              <option value="all">All Subjects</option>
+              <option value="Mathematics">Mathematics</option>
+              <option value="English">English / Use of English</option>
+              <option value="Physics">Physics</option>
+              <option value="Chemistry">Chemistry</option>
+              <option value="Biology">Biology</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>NUMBER OF QUESTIONS</label>
+            <input type="number" id="exam-count" value="20" min="1" max="200">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>TIME PER QUESTION (seconds)</label>
+            <input type="number" id="exam-time" value="60" min="10" max="300">
+          </div>
+          <div class="form-group">
+            <label>SHOW ANSWER AFTER EACH</label>
+            <select id="exam-feedback">
+              <option value="yes">Yes — instant feedback</option>
+              <option value="no">No — review at end</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="startExam()" style="margin-top:8px;">START EXAM →</button>
+      </div>
+    </div>
+
+    <!-- Active exam -->
+    <div id="exam-active" style="display:none;">
+      <div class="exam-header">
+        <div class="exam-info">
+          <div><strong id="exam-subject-label">Mathematics</strong></div>
+          <div>Question <strong id="q-current-num">1</strong> of <strong id="q-total-num">20</strong></div>
+        </div>
+        <div class="timer-box" id="timer-display">00:00</div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span>Progress</span>
+          <span id="progress-pct">0%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      </div>
+
+      <div class="q-grid" id="q-navigator"></div>
+
+      <div class="q-card" id="q-card">
+        <div class="q-number" id="q-num-label">QUESTION 1</div>
+        <div class="q-text" id="q-text-display"></div>
+        <div class="options" id="q-options"></div>
+        <div class="explanation" id="q-explanation-box" style="display:none;"></div>
+      </div>
+
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="prevQuestion()">← PREV</button>
+        <button class="btn btn-ghost" onclick="skipQuestion()">SKIP</button>
+        <button class="btn btn-primary" onclick="nextQuestion()" id="btn-next">NEXT →</button>
+        <button class="btn btn-danger" onclick="submitExam()">SUBMIT</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS PANEL -->
+  <div class="panel" id="panel-results">
+    <div id="no-results" class="empty">
+      <div class="empty-icon">📊</div>
+      <div>Complete an exam to see your results here.</div>
+    </div>
+
+    <div id="results-content" style="display:none;">
+      <div class="score-hero">
+        <div class="score-circle">
+          <div class="score-pct" id="res-pct">0%</div>
+          <div class="score-label">SCORE</div>
+        </div>
+        <div class="score-grade" id="res-grade">F</div>
+        <div class="score-msg" id="res-msg">Keep practicing!</div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card stat-correct">
+          <div class="stat-val" id="res-correct">0</div>
+          <div class="stat-lbl">CORRECT</div>
+        </div>
+        <div class="stat-card stat-wrong">
+          <div class="stat-val" id="res-wrong">0</div>
+          <div class="stat-lbl">WRONG</div>
+        </div>
+        <div class="stat-card stat-skip">
+          <div class="stat-val" id="res-skip">0</div>
+          <div class="stat-lbl">SKIPPED</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔍 Question Review</div>
+        <div id="review-list"></div>
+      </div>
+
+      <button class="btn btn-primary" onclick="switchTab('exam')">RETAKE / NEW EXAM</button>
+    </div>
+  </div>
+</div>
+
+<!-- Notification -->
+<div class="notif" id="notif"></div>
+
+<script>
+// ===== STATE =====
+let questions = JSON.parse(localStorage.getItem('futa_questions') || '[]');
+let examQuestions = [];
+let currentQ = 0;
+let userAnswers = [];
+let timerInterval = null;
+let timeLeft = 0;
+let totalTime = 0;
+let examFeedback = 'yes';
+let examDone = false;
+
+// ===== SAVE =====
+function save() {
+  localStorage.setItem('futa_questions', JSON.stringify(questions));
+}
+
+// ===== NOTIFY =====
+function notify(msg, isError = false) {
+  const n = document.getElementById('notif');
+  n.textContent = msg;
+  n.className = 'notif show' + (isError ? ' error' : '');
+  setTimeout(() => n.className = 'notif', 2600);
+}
+
+// ===== TABS =====
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const idx = ['questions','exam','results'].indexOf(tab);
+  document.querySelectorAll('.tab')[idx].classList.add('active');
+  document.getElementById('panel-' + tab).classList.add('active');
+  if (tab === 'questions') renderBank();
+}
+
+// ===== BADGE =====
+function badgeClass(subj) {
+  if (subj === 'Mathematics') return 'badge-math';
+  if (subj === 'English') return 'badge-eng';
+  return 'badge-sci';
+}
+
+// ===== ADD QUESTION =====
+function addQuestion() {
+  const text = document.getElementById('q-text').value.trim();
+  const a = document.getElementById('opt-a').value.trim();
+  const b = document.getElementById('opt-b').value.trim();
+  const c = document.getElementById('opt-c').value.trim();
+  const d = document.getElementById('opt-d').value.trim();
+  const answer = document.getElementById('q-answer').value;
+  const subj = document.getElementById('q-subject').value;
+  const year = document.getElementById('q-year').value.trim();
+  const explanation = document.getElementById('q-explanation').value.trim();
+
+  if (!text || !a || !b || !c || !d) { notify('Please fill in the question and all 4 options.', true); return; }
+
+  questions.push({ text, options: { A: a, B: b, C: c, D: d }, answer, subject: subj, year, explanation });
+  save(); clearForm(); renderBank();
+  notify('Question added! (' + questions.length + ' total)');
+}
+
+function clearForm() {
+  ['q-text','opt-a','opt-b','opt-c','opt-d','q-year','q-explanation'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('q-subject').value = 'Mathematics';
+  document.getElementById('q-answer').value = 'A';
+}
+
+function clearAll() {
+  if (!confirm('Delete ALL questions? This cannot be undone.')) return;
+  questions = []; save(); renderBank(); notify('All questions cleared.');
+}
+
+// ===== BANK =====
+function renderBank() {
+  const filter = document.getElementById('filter-subject').value;
+  const filtered = filter === 'all' ? questions : questions.filter(q => q.subject === filter);
+  document.getElementById('q-count').textContent = questions.length;
+
+  const container = document.getElementById('q-bank');
+  if (!filtered.length) {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><div>No questions yet. Add some above!</div></div>';
+    return;
+  }
+
+  container.innerHTML = filtered.map((q, i) => {
+    const realIdx = questions.indexOf(q);
+    return `
+    <div class="q-item">
+      <div>
+        <div class="q-item-text">${i+1}. ${q.text.substring(0,100)}${q.text.length>100?'...':''}</div>
+        <div class="q-meta">Ans: <strong style="color:var(--green)">${q.answer}</strong> ${q.year ? '· ' + q.year : ''}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+        <span class="badge ${badgeClass(q.subject)}">${q.subject}</span>
+        <button class="btn btn-ghost" style="padding:4px 10px;font-size:10px;" onclick="deleteQ(${realIdx})">DEL</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function deleteQ(idx) {
+  questions.splice(idx, 1); save(); renderBank(); notify('Question removed.');
+}
+
+// ===== IMPORT / EXPORT =====
+function exportJSON() {
+  if (!questions.length) { notify('No questions to export.', true); return; }
+  const blob = new Blob([JSON.stringify(questions, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'futa_questions.json'; a.click();
+  notify('Exported ' + questions.length + ' questions.');
+}
+
+function importJSON() {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json';
+  input.onchange = e => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!Array.isArray(data)) throw new Error();
+        questions = [...questions, ...data];
+        save(); renderBank();
+        notify('Imported ' + data.length + ' questions!');
+      } catch { notify('Invalid JSON file.', true); }
+    };
+    reader.readAsText(e.target.files[0]);
+  };
+  input.click();
+}
+
+// ===== EXAM =====
+function startExam() {
+  const subj = document.getElementById('exam-subject').value;
+  const count = parseInt(document.getElementById('exam-count').value);
+  const timePerQ = parseInt(document.getElementById('exam-time').value);
+  examFeedback = document.getElementById('exam-feedback').value;
+
+  let pool = subj === 'all' ? [...questions] : questions.filter(q => q.subject === subj);
+  if (!pool.length) { notify('No questions available. Add some first!', true); return; }
+
+  // Shuffle
+  pool = pool.sort(() => Math.random() - 0.5).slice(0, Math.min(count, pool.length));
+  examQuestions = pool;
+  userAnswers = new Array(pool.length).fill(null);
+  currentQ = 0;
+  examDone = false;
+  totalTime = pool.length * timePerQ;
+  timeLeft = totalTime;
+
+  document.getElementById('exam-setup').style.display = 'none';
+  document.getElementById('exam-active').style.display = 'block';
+  document.getElementById('exam-subject-label').textContent = subj === 'all' ? 'All Subjects' : subj;
+  document.getElementById('q-total-num').textContent = pool.length;
+
+  renderNavigator();
+  renderQuestion();
+  startTimer();
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) { clearInterval(timerInterval); submitExam(); }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+  const s = (timeLeft % 60).toString().padStart(2, '0');
+  const el = document.getElementById('timer-display');
+  el.textContent = m + ':' + s;
+  el.className = 'timer-box' + (timeLeft <= 30 ? ' urgent' : '');
+}
+
+function renderNavigator() {
+  const nav = document.getElementById('q-navigator');
+  nav.innerHTML = examQuestions.map((_, i) => {
+    let cls = 'q-dot';
+    if (i === currentQ) cls += ' current';
+    else if (userAnswers[i] !== null) cls += ' answered';
+    return `<div class="${cls}" onclick="goToQuestion(${i})">${i+1}</div>`;
+  }).join('');
+}
+
+function renderQuestion() {
+  const q = examQuestions[currentQ];
+  document.getElementById('q-num-label').textContent = 'QUESTION ' + (currentQ + 1);
+  document.getElementById('q-current-num').textContent = currentQ + 1;
+  document.getElementById('q-text-display').textContent = q.text;
+
+  const pct = Math.round((currentQ / examQuestions.length) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-pct').textContent = pct + '%';
+
+  const optContainer = document.getElementById('q-options');
+  const userAns = userAnswers[currentQ];
+  const answered = userAns !== null;
+
+  optContainer.innerHTML = ['A','B','C','D'].map(letter => {
+    let cls = 'option';
+    if (answered) {
+      cls += ' disabled';
+      if (letter === q.answer) cls += ' correct';
+      else if (letter === userAns) cls += ' wrong';
+    } else if (letter === userAns) cls += ' selected';
+    return `
+      <div class="${cls}" onclick="${answered ? '' : `selectAnswer('${letter}')`}">
+        <div class="opt-letter">${letter}</div>
+        <div>${q.options[letter]}</div>
+      </div>`;
+  }).join('');
+
+  const expBox = document.getElementById('q-explanation-box');
+  if (answered && examFeedback === 'yes' && q.explanation) {
+    expBox.textContent = '💡 ' + q.explanation;
+    expBox.style.display = 'block';
+  } else { expBox.style.display = 'none'; }
+
+  renderNavigator();
+}
+
+function selectAnswer(letter) {
+  if (examDone) return;
+  userAnswers[currentQ] = letter;
+  renderQuestion();
+}
+
+function goToQuestion(i) { currentQ = i; renderQuestion(); }
+function prevQuestion() { if (currentQ > 0) { currentQ--; renderQuestion(); } }
+function nextQuestion() {
+  if (currentQ < examQuestions.length - 1) { currentQ++; renderQuestion(); }
+  else submitExam();
+}
+function skipQuestion() {
+  if (currentQ < examQuestions.length - 1) { currentQ++; renderQuestion(); }
+}
+
+function submitExam() {
+  clearInterval(timerInterval);
+  examDone = true;
+  showResults();
+  switchTab('results');
+}
+
+// ===== RESULTS =====
+function showResults() {
+  document.getElementById('no-results').style.display = 'none';
+  document.getElementById('results-content').style.display = 'block';
+
+  let correct = 0, wrong = 0, skip = 0;
+  examQuestions.forEach((q, i) => {
+    const ans = userAnswers[i];
+    if (ans === null) skip++;
+    else if (ans === q.answer) correct++;
+    else wrong++;
+  });
+
+  const total = examQuestions.length;
+  const pct = Math.round((correct / total) * 100);
+  document.getElementById('res-pct').textContent = pct + '%';
+  document.getElementById('res-correct').textContent = correct;
+  document.getElementById('res-wrong').textContent = wrong;
+  document.getElementById('res-skip').textContent = skip;
+
+  let grade, msg;
+  if (pct >= 70) { grade = 'EXCELLENT'; msg = 'Outstanding performance! Keep it up! 🎉'; }
+  else if (pct >= 60) { grade = 'CREDIT'; msg = 'Good work! A bit more practice and you\'ll ace it. 💪'; }
+  else if (pct >= 50) { grade = 'PASS'; msg = 'You passed! Focus on your weak areas. 📚'; }
+  else { grade = 'FAIL'; msg = 'Don\'t give up — review the questions and try again. 🔄'; }
+
+  document.getElementById('res-grade').textContent = grade;
+  document.getElementById('res-msg').textContent = msg;
+
+  const gradeEl = document.getElementById('res-grade');
+  gradeEl.style.color = pct >= 50 ? 'var(--green)' : 'var(--red)';
+
+  // Review
+  const reviewList = document.getElementById('review-list');
+  reviewList.innerHTML = examQuestions.map((q, i) => {
+    const ans = userAnswers[i];
+    const isCorrect = ans === q.answer;
+    const isSkip = ans === null;
+    const statusClass = isCorrect ? 'status-correct' : isSkip ? 'status-skip' : 'status-wrong';
+    const statusText = isCorrect ? '✓ CORRECT' : isSkip ? '— SKIPPED' : '✗ WRONG';
+
+    const optHTML = ['A','B','C','D'].map(l => {
+      let cls = 'review-opt neutral';
+      if (l === q.answer) cls = 'review-opt correct-ans';
+      else if (l === ans && !isCorrect) cls = 'review-opt user-wrong';
+      return `<div class="${cls}">${l}. ${q.options[l]}</div>`;
+    }).join('');
+
+    return `
+    <div class="review-item">
+      <div class="review-status ${statusClass}">${statusText}</div>
+      <div class="review-q">${i+1}. ${q.text}</div>
+      <div class="review-options">${optHTML}</div>
+      ${q.explanation ? `<div class="explanation" style="margin-top:10px;">💡 ${q.explanation}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ===== INIT =====
+renderBank();
+
+// Reset exam panel when switching back to setup
+document.querySelectorAll('.tab')[1].addEventListener('click', () => {
+  if (!examDone) return;
+  document.getElementById('exam-setup').style.display = 'block';
+  document.getElementById('exam-active').style.display = 'none';
+  examDone = false;
+});
+</script>
+</body>
+</html>
